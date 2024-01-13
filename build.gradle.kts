@@ -1,5 +1,36 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.LibraryPlugin
+
 plugins {
-    id("com.android.application") version "8.2.1" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.0" apply false
+    alias(libs.plugins.application).apply(false)
+    alias(libs.plugins.kotlin).apply(false)
+    alias(libs.plugins.ksp).apply(false)
+    alias(libs.plugins.hilt).apply(false)
+}
+
+subprojects {
+    val libraryConfig: Any.() -> Unit = {
+        extensions.configure<LibraryExtension> {
+            defaultConfig {
+                testInstrumentationRunner = App.Android.TestRunner.default
+            }
+
+            configureLibraries()
+        }
+    }
+
+    plugins.withType<LibraryPlugin>(libraryConfig)
+}
+
+fun LibraryExtension.configureLibraries() {
+    compileSdk = App.Android.compileSdk
+
+    defaultConfig {
+        minSdk = App.Android.minSdk
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.toVersion(App.Java.version)
+        targetCompatibility = JavaVersion.toVersion(App.Java.version)
+    }
 }

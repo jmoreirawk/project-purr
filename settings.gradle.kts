@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         google()
@@ -11,8 +13,17 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+
+    versionCatalogs {
+        create("libs") {
+            from(files("./gradle/dependencies.versions.toml"))
+        }
+    }
 }
 
 rootProject.name = "Project Purr"
 include(":app")
- 
+include(":data")
+// Features
+include(":feature:list")
+include(":feature:details")

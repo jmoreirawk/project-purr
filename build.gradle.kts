@@ -30,7 +30,7 @@ fun LibraryExtension.configureLibraries() {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.toVersion(App.Java.version)
-        targetCompatibility = JavaVersion.toVersion(App.Java.version)
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }

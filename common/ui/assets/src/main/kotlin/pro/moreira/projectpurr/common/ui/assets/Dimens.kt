@@ -8,6 +8,7 @@ data class Dimens(
     // Padding
     val smallPadding: Dp = 4.dp,
     val normalPadding: Dp = 8.dp,
+    val largePadding: Dp = 16.dp,
     // Size
     val cardHeight: Dp = 200.dp,
     val iconSize: Dp = 40.dp,

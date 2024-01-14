@@ -23,6 +23,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,6 +81,7 @@ fun ListScreen(
                     it,
                     (value as ListScreenState.Success).list.collectAsLazyPagingItems(),
                     goToDetails,
+                    viewModel::onSearch,
                 )
 
                 is ListScreenState.Error -> LaunchedEffect(value) {
@@ -95,27 +97,48 @@ private fun Content(
     paddingValues: PaddingValues,
     items: LazyPagingItems<ListScreenModel>,
     goToDetails: (String) -> Unit,
+    onSearch: (String) -> Unit,
 ) {
-    LazyVerticalGrid(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(dimens.normalPadding),
-        horizontalArrangement = Arrangement.spacedBy(dimens.normalPadding),
-        verticalArrangement = Arrangement.spacedBy(dimens.normalPadding),
+            .padding(paddingValues)
     ) {
-        items(items.itemCount) { index ->
-            val item = items[index] ?: return@items
-            BreedItem(goToDetails, item)
-        }
-        item {
-            when {
-                items.loadState.refresh is LoadState.Error -> ErrorMessage(items.loadState.refresh as LoadState.Error)
-                items.loadState.append is LoadState.Error -> ErrorMessage(items.loadState.append as LoadState.Error)
-                items.loadState.refresh is LoadState.Loading -> Loading()
-                items.loadState.append is LoadState.Loading -> Loading()
-                else -> {}
+        var search by remember { mutableStateOf("") }
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimens.largePadding),
+            label = { Text(text = stringResource(id = string.search)) },
+            value = search,
+            onValueChange = {
+                search = it
+                onSearch(search)
+            }
+        )
+
+        LazyVerticalGrid(
+            modifier = Modifier.fillMaxSize(),
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(dimens.largePadding),
+            horizontalArrangement = Arrangement.spacedBy(dimens.normalPadding),
+            verticalArrangement = Arrangement.spacedBy(dimens.normalPadding),
+        ) {
+            if (items.itemCount == 0) item {
+                Text(text = stringResource(id = string.no_results))
+            }
+            items(items.itemCount) { index ->
+                val item = items[index] ?: return@items
+                BreedItem(goToDetails, item)
+            }
+            item {
+                when {
+                    items.loadState.refresh is LoadState.Error -> ErrorMessage(items.loadState.refresh as LoadState.Error)
+                    items.loadState.append is LoadState.Error -> ErrorMessage(items.loadState.append as LoadState.Error)
+                    items.loadState.refresh is LoadState.Loading -> Loading()
+                    items.loadState.append is LoadState.Loading -> Loading()
+                    else -> {}
+                }
             }
         }
     }
@@ -161,8 +184,9 @@ private fun BreedImage(url: String, isFavorite: Boolean) {
             url = url,
             contentScale = ContentScale.Crop,
         )
-        val painter =
-            painterResource(id = if (isFavorite) drawable.ic_fav else drawable.ic_not_fav)
+        val painter = painterResource(
+            id = if (isFavorite) drawable.ic_fav else drawable.ic_not_fav
+        )
         Icon(
             modifier = Modifier
                 .align(Alignment.TopEnd)

@@ -23,13 +23,17 @@ class ListViewModel
     val uiState = _uiState.asStateFlow()
 
     init {
-        populateUIState()
+        populateUIState(null)
     }
 
-    private fun populateUIState() = viewModelScope.launch {
+    fun onSearch(query: String) {
+        populateUIState(query)
+    }
+
+    private fun populateUIState(query: String?) = viewModelScope.launch {
         _uiState.update {
             ListScreenState.Success(
-                repository.getCatList(null).map { pagingData ->
+                repository.getCatList(query).map { pagingData ->
                     pagingData.map { breed ->
                         ListScreenModel(
                             id = breed.id,

@@ -2,7 +2,7 @@ package pro.moreira.projectpurr.data.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import pro.moreira.projectpurr.data.models.Breed
+import pro.moreira.projectpurr.data.entities.Breed
 import pro.moreira.projectpurr.data.remote.CatApi
 
 class BreedPagingSource(

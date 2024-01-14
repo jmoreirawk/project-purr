@@ -1,4 +1,4 @@
-package pro.moreira.projectpurr.data.models
+package pro.moreira.projectpurr.data.entities
 
 data class Image(
     val id: String,

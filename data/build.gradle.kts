@@ -28,6 +28,12 @@ dependencies {
         ksp(compiler)
     }
     // Data Persistence
+    with(libs.room) {
+        implementation(runtime)
+        ksp(compiler)
+        implementation(ktx)
+        implementation(paging)
+    }
     // Networking
     with(libs.retrofit) {
         implementation(this)

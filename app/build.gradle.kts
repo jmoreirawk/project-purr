@@ -52,6 +52,7 @@ android {
 
 dependencies {
     // Modules
+    implementation(project(":common:ui:assets"))
     implementation(project(":feature:list"))
     implementation(project(":feature:details"))
     // Android
@@ -61,7 +62,6 @@ dependencies {
         implementation(platform(bom))
         implementation(ui)
         implementation(material)
-        implementation(preview)
         implementation(activity)
         implementation(navigation)
     }

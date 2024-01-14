@@ -27,3 +27,5 @@ include(":data")
 // Features
 include(":feature:list")
 include(":feature:details")
+// Common
+include(":common:ui:assets")

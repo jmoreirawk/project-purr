@@ -1,4 +1,4 @@
-package pro.moreira.projectpurr.ui.theme
+package pro.moreira.projectpurr.common.ui.assets
 
 import androidx.compose.ui.graphics.Color
 

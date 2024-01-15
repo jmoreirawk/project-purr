@@ -12,6 +12,7 @@ data class Dimens(
     // Size
     val cardHeight: Dp = 200.dp,
     val iconSize: Dp = 40.dp,
+    val largeIconSize: Dp = 80.dp,
     // Elevation
     val elevation: Dp = 4.dp,
 )

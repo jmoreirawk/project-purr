@@ -6,4 +6,5 @@ import androidx.room.Entity
 data class RemoteKey(
     val label: String,
     val nextKey: Int?,
+    val lastUpdate: Long,
 )

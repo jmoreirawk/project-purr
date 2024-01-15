@@ -16,4 +16,7 @@ interface RemoteKeyDao {
 
     @Query("DELETE FROM remote_keys WHERE label = :query")
     suspend fun deleteByQuery(query: String)
+
+    @Query("SELECT lastUpdate FROM remote_keys WHERE label = :query")
+    suspend fun getLastUpdate(query: String): Long?
 }

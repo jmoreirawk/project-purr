@@ -30,6 +30,13 @@ class ListViewModel
         populateUIState(query)
     }
 
+    fun onFavoriteClicked(id: String, isFavorite: Boolean) = viewModelScope.launch {
+        runCatching { repository.toggleFavorite(id, isFavorite) }
+            .onFailure { error ->
+                error.message?.let { _uiState.value = ListScreenState.Error(it) }
+            }
+    }
+
     private fun populateUIState(query: String?) = viewModelScope.launch {
         _uiState.update {
             ListScreenState.Success(

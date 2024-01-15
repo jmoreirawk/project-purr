@@ -29,6 +29,9 @@ interface BreedDao {
     @Query("UPDATE Breed SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun updateFavorite(id: String, isFavorite: Boolean)
 
+    @Query("SELECT * FROM Breed WHERE isFavorite = 1")
+    fun getFavorites(): PagingSource<Int, Breed>
+
     @Query("DELETE FROM Breed")
     suspend fun deleteAll()
 }

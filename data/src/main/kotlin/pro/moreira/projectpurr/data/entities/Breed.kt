@@ -19,7 +19,7 @@ data class Breed(
         return if (lifeSpan.size == 1) {
             "${lifeSpan[0]} years"
         } else {
-            "${lifeSpan[2]} years"
+            "${lifeSpan[1]} years"
         }
     }
 }

@@ -21,7 +21,7 @@ dependencies {
         implementation(platform(bom))
         implementation(ui)
         implementation(activity)
-        implementation(material)
+        implementation(material3)
     }
     // Images
     implementation(libs.landscapist)

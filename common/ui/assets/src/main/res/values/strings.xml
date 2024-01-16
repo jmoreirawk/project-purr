@@ -9,8 +9,11 @@
     <string name="retry">Retry</string>
     <string name="loading">Loading…</string>
     <string name="no_image">No images found for this breed</string>
-    <string name="origin">Origin: </string>
-    <string name="temperament">Temperament: </string>
-    <string name="life_span">Life span: </string>
-    <string name="description">Description: </string>
+    <string name="origin">Origin:&#160;</string>
+    <string name="temperament">Temperament:&#160;</string>
+    <string name="life_span">Life span:&#160;</string>
+    <string name="description">Description:&#160;</string>
+    <string name="breeds">Breeds</string>
+    <string name="favorites">Favorites</string>
+    <string name="clear">Clear</string>
 </resources>

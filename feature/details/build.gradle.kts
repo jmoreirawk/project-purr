@@ -27,7 +27,7 @@ dependencies {
     with(libs.compose) {
         implementation(platform(bom))
         implementation(ui)
-        implementation(material)
+        implementation(material3)
         implementation(tooling)
         implementation(preview)
         implementation(paging)

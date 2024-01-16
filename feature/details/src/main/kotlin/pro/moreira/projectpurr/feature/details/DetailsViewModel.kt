@@ -11,7 +11,8 @@ import pro.moreira.projectpurr.data.remote.CatRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class DetailsViewModel @Inject constructor(
+class DetailsViewModel
+@Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: CatRepository,
 ) : ViewModel() {
@@ -35,7 +36,7 @@ class DetailsViewModel @Inject constructor(
     }
 
     fun onRetry() {
-        populateUIState()
+        populateUIState(true)
     }
 
     private fun populateUIState(isRefresh: Boolean = false) = viewModelScope.launch {

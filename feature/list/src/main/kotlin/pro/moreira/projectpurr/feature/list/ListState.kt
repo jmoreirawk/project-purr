@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.Flow
 
 sealed interface ListScreenState {
     data object Loading : ListScreenState
-    data class Success(val list: Flow<PagingData<ListScreenModel>>) : ListScreenState
-    data class Error(val message: String) : ListScreenState
+    data class Success(
+        val list: Flow<PagingData<ListScreenModel>>,
+        val favouriteList: Flow<PagingData<ListScreenModel>>,
+    ) : ListScreenState
 }

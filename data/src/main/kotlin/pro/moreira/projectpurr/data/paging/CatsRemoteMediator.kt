@@ -1,4 +1,4 @@
-package pro.moreira.projectpurr.data.remote
+package pro.moreira.projectpurr.data.paging
 
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
@@ -10,11 +10,12 @@ import pro.moreira.projectpurr.data.entities.Breed
 import pro.moreira.projectpurr.data.entities.RemoteKey
 import pro.moreira.projectpurr.data.local.CatLocalDataSource
 import pro.moreira.projectpurr.data.local.dao.RemoteKeyDao
+import pro.moreira.projectpurr.data.remote.CatApi
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalPagingApi::class)
 class CatsRemoteMediator(
-    private val name: String?,
+    private val query: String,
     private val localDataSource: CatLocalDataSource,
     private val remoteKeyDao: RemoteKeyDao,
     private val api: CatApi,
@@ -22,7 +23,7 @@ class CatsRemoteMediator(
 
     override suspend fun initialize(): InitializeAction {
         val cacheTimeout = TimeUnit.DAYS.convert(30, TimeUnit.MILLISECONDS)
-        val lastUpdate = remoteKeyDao.getLastUpdate(name ?: "")
+        val lastUpdate = remoteKeyDao.getLastUpdate(query)
         return if (lastUpdate != null && System.currentTimeMillis() - lastUpdate >= cacheTimeout) {
             InitializeAction.SKIP_INITIAL_REFRESH
         } else {
@@ -40,7 +41,7 @@ class CatsRemoteMediator(
                 LoadType.REFRESH -> null
                 LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
                 LoadType.APPEND -> {
-                    val remoteKey = remoteKeyDao.remoteKeyByQuery(name ?: "")
+                    val remoteKey = remoteKeyDao.remoteKeyByQuery(query)
                     if (remoteKey.nextKey == null) {
                         return MediatorResult.Success(endOfPaginationReached = true)
                     }
@@ -58,11 +59,11 @@ class CatsRemoteMediator(
         }
     }
 
-    private suspend fun getRemoteResponse(limit: Int, loadKey: Int?) = if (name.isNullOrEmpty()) {
+    private suspend fun getRemoteResponse(limit: Int, loadKey: Int?) = if (query.isEmpty()) {
         api.getCatList(limit, loadKey ?: 0)
             .map { if (it.image == null) it.getImageIfPossible() else it }
     } else {
-        api.searchBreed(name, limit, loadKey ?: 0)
+        api.searchBreed(query, limit, loadKey ?: 0)
     }
 
     private suspend fun Breed.getImageIfPossible(): Breed = withContext(Dispatchers.IO) {
@@ -74,14 +75,14 @@ class CatsRemoteMediator(
     private suspend fun deleteEntriesIfNecessary(loadType: LoadType) {
         if (loadType == LoadType.REFRESH) {
             localDataSource.deleteAll()
-            remoteKeyDao.deleteByQuery(name ?: "")
+            remoteKeyDao.deleteByQuery(query)
         }
     }
 
     private suspend fun updateRemoteKeys(loadKey: Int?) {
         remoteKeyDao.insertOrReplace(
             RemoteKey(
-                label = name ?: "",
+                label = query,
                 nextKey = (loadKey ?: 0) + 1,
                 lastUpdate = System.currentTimeMillis()
             )

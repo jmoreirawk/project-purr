@@ -39,4 +39,11 @@ dependencies {
         ksp(compiler)
         implementation(navigation.compose)
     }
+    // Testing
+    testImplementation(project(":common:test"))
+    testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.faker)
+    testImplementation(libs.turbine)
 }

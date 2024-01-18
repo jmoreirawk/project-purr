@@ -61,7 +61,7 @@ dependencies {
     with(libs.compose) {
         implementation(platform(bom))
         implementation(ui)
-        implementation(material)
+        implementation(material3)
         implementation(activity)
         implementation(navigation)
     }

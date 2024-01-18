@@ -11,8 +11,8 @@ class CatLocalDataSource
 
     suspend fun updateBreed(breed: Breed) = breedDao.update(breed)
 
-    fun getBreeds(name: String?) =
-        if (name.isNullOrEmpty()) breedDao.getAll() else breedDao.filterByName(name)
+    fun getBreeds(name: String) =
+        if (name.isEmpty()) breedDao.getAll() else breedDao.filterByName(name)
 
     suspend fun getBreed(id: String) = breedDao.get(id)
 

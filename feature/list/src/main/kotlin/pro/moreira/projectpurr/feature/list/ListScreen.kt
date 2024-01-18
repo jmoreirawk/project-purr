@@ -1,8 +1,10 @@
 package pro.moreira.projectpurr.feature.list
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -11,33 +13,41 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
@@ -47,55 +57,66 @@ import pro.moreira.projectpurr.common.ui.assets.R.string
 import pro.moreira.projectpurr.common.ui.assets.components.FavoriteIcon
 import pro.moreira.projectpurr.common.ui.assets.components.Image
 import pro.moreira.projectpurr.common.ui.assets.components.Loading
+import pro.moreira.projectpurr.common.ui.assets.components.TopBar
 import pro.moreira.projectpurr.common.ui.assets.dimens
+import pro.moreira.projectpurr.feature.list.navigation.BottomNavBar
+import pro.moreira.projectpurr.feature.list.navigation.BottomNavItems
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(
     goToDetails: (String) -> Unit,
     viewModel: ListViewModel = hiltViewModel(),
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle()
+    val errorState = viewModel.errorState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    var showFavorites by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
-        topBar = {
-            Surface(shadowElevation = dimens.elevation) {
-                TopAppBar(title = {
-                    Text(
-                        text = stringResource(id = string.app_name),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                })
-            }
+        topBar = { TopBar(stringResource(id = string.app_name)) },
+        bottomBar = {
+            BottomNavBar(
+                items = listOf(
+                    BottomNavItems.Breeds { showFavorites = false },
+                    BottomNavItems.Favorites { showFavorites = true },
+                ),
+                showFavorites = showFavorites,
+            )
         },
-        bottomBar = {}, // TODO Add bottom bar
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) {
         state.run {
             when (value) {
                 is ListScreenState.Loading -> Loading()
-                is ListScreenState.Success -> Content(
-                    it,
-                    (value as ListScreenState.Success).list.collectAsLazyPagingItems(),
-                    goToDetails,
-                    viewModel::onSearch,
-                    viewModel::onFavoriteClicked,
+                is ListScreenState.Success -> ListContent(
+                    paddingValues = it,
+                    items = (value as ListScreenState.Success).getListToShow(showFavorites),
+                    goToDetails = goToDetails,
+                    isFavoritesTab = showFavorites,
+                    onSearch = viewModel::onSearch,
+                    onFavoriteClicked = viewModel::onFavoriteClicked,
                 )
-
-                is ListScreenState.Error -> LaunchedEffect(value) {
-                    snackbarHostState.showSnackbar((value as ListScreenState.Error).message)
-                }
             }
         }
+    }
+
+    // Error handling
+    LaunchedEffect(errorState.value) {
+        errorState.value?.let { snackbarHostState.showSnackbar(it).also { viewModel.clearError() } }
     }
 }
 
 @Composable
-private fun Content(
+private fun ListScreenState.Success.getListToShow(showFavorites: Boolean) =
+    if (showFavorites) favouriteList.collectAsLazyPagingItems() else list.collectAsLazyPagingItems()
+
+@Composable
+private fun ListContent(
     paddingValues: PaddingValues,
     items: LazyPagingItems<ListScreenModel>,
     goToDetails: (String) -> Unit,
+    isFavoritesTab: Boolean,
     onSearch: (String) -> Unit,
     onFavoriteClicked: (String, Boolean) -> Unit,
 ) {
@@ -104,22 +125,11 @@ private fun Content(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        var search by remember { mutableStateOf("") }
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimens.largePadding),
-            label = { Text(text = stringResource(id = string.search)) },
-            value = search,
-            onValueChange = {
-                search = it
-                onSearch(search)
-            }
-        )
-
+        Search(!isFavoritesTab, onSearch)
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = GridCells.Fixed(2),
+            state = rememberLazyGridState(),
             contentPadding = PaddingValues(dimens.largePadding),
             horizontalArrangement = Arrangement.spacedBy(dimens.normalPadding),
             verticalArrangement = Arrangement.spacedBy(dimens.normalPadding),
@@ -129,7 +139,7 @@ private fun Content(
             }
             items(items.itemCount) { index ->
                 val item = items[index] ?: return@items
-                BreedItem(goToDetails, item, onFavoriteClicked)
+                BreedItem(goToDetails, item, isFavoritesTab, onFavoriteClicked)
             }
             item {
                 when {
@@ -145,10 +155,41 @@ private fun Content(
 }
 
 @Composable
+private fun ColumnScope.Search(
+    showSearch: Boolean,
+    onSearch: (String) -> Unit,
+) {
+    AnimatedVisibility(visible = showSearch) {
+        var search by rememberSaveable { mutableStateOf("") }
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimens.largePadding),
+            label = { Text(text = stringResource(id = string.search)) },
+            value = search,
+            onValueChange = {
+                search = it
+                onSearch(search)
+            },
+            trailingIcon = {
+                IconButton(onClick = { search = ""; onSearch(search) }) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = stringResource(id = string.clear),
+                    )
+                }
+            },
+            singleLine = true,
+        )
+    }
+}
+
+@Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun BreedItem(
     goToDetails: (String) -> Unit,
     item: ListScreenModel,
+    isFavoritesTab: Boolean,
     onFavoriteClicked: (String, Boolean) -> Unit,
 ) {
     Card(
@@ -156,7 +197,7 @@ private fun BreedItem(
             .fillMaxWidth()
             .height(dimens.cardHeight),
         onClick = { goToDetails(item.id) },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
     ) {
         Column(
             modifier = Modifier
@@ -165,7 +206,12 @@ private fun BreedItem(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            BreedImage(item.url, item.isFavorite) { onFavoriteClicked(item.id, !item.isFavorite) }
+            BreedImage(
+                url = item.url,
+                isFavorite = item.isFavorite,
+                showLifeSpan = isFavoritesTab && item.isFavorite,
+                lifeSpan = item.lifeSpan,
+            ) { onFavoriteClicked(item.id, !item.isFavorite) }
             Spacer(modifier = Modifier.height(dimens.normalPadding))
             BreedName(item.breedName)
         }
@@ -176,6 +222,8 @@ private fun BreedItem(
 private fun BreedImage(
     url: String,
     isFavorite: Boolean,
+    showLifeSpan: Boolean,
+    lifeSpan: String,
     onFavoriteClicked: () -> Unit,
 ) {
     Box(
@@ -184,11 +232,13 @@ private fun BreedImage(
             .fillMaxHeight(0.8f),
         contentAlignment = Alignment.Center,
     ) {
-        Image(
-            modifier = Modifier.fillMaxSize(),
-            url = url,
-            contentScale = ContentScale.Crop,
-        )
+        Card {
+            Image(
+                modifier = Modifier.fillMaxSize(),
+                url = url,
+                contentScale = ContentScale.Crop,
+            )
+        }
         IconButton(modifier = Modifier.align(Alignment.TopEnd), onClick = onFavoriteClicked) {
             FavoriteIcon(
                 modifier = Modifier
@@ -196,6 +246,22 @@ private fun BreedImage(
                     .padding(dimens.smallPadding),
                 isFavorite = isFavorite,
             )
+        }
+        if (showLifeSpan) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .align(Alignment.BottomCenter),
+                shape = RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ) {
+                Text(
+                    modifier = Modifier.padding(dimens.smallPadding),
+                    text = "Life span: $lifeSpan",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
     }
 }
@@ -245,7 +311,9 @@ fun Preview() {
             "1",
             "Abyssinian",
             "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
-            false,
+            true,
+            "20 years"
         ),
+        isFavoritesTab = true,
     ) { _, _ -> }
 }

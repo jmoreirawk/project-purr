@@ -5,4 +5,5 @@ data class ListScreenModel(
     val breedName: String,
     val url: String,
     val isFavorite: Boolean,
+    val lifeSpan: String,
 )

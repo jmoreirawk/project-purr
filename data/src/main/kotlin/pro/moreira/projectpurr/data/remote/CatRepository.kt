@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 import pro.moreira.projectpurr.data.entities.Breed
 import pro.moreira.projectpurr.data.local.CatLocalDataSource
 import pro.moreira.projectpurr.data.local.dao.RemoteKeyDao
-import pro.moreira.projectpurr.data.paging.BreedPagingSource
+import pro.moreira.projectpurr.data.paging.CatsRemoteMediator
 import javax.inject.Inject
 
 class CatRepository
@@ -19,30 +19,49 @@ class CatRepository
     private val localDataSource: CatLocalDataSource,
     private val remoteKeyDao: RemoteKeyDao,
 ) {
+    companion object {
+        const val PAGE_SIZE = 20
+    }
+
     @OptIn(ExperimentalPagingApi::class)
-    fun getCatList(name: String?): Flow<PagingData<Breed>> = Pager(
-        pagingSourceFactory = { localDataSource.getBreeds(name) },
+    fun getCatList(query: String): Flow<PagingData<Breed>> = Pager(
+        pagingSourceFactory = { localDataSource.getBreeds(query) },
         config = PagingConfig(
-            pageSize = BreedPagingSource.PAGE_SIZE,
+            pageSize = PAGE_SIZE,
             prefetchDistance = 5,
             enablePlaceholders = true,
         ),
-        remoteMediator = CatsRemoteMediator(name, localDataSource, remoteKeyDao, api),
+        remoteMediator = CatsRemoteMediator(query, localDataSource, remoteKeyDao, api),
     ).flow
 
     suspend fun getBreed(id: String, refresh: Boolean): Breed = withContext(Dispatchers.IO) {
-        if (refresh) {
-            val breed = api.getBreed(id)
-            localDataSource.updateBreed(breed)
-        }
-        localDataSource.getBreed(id)
+        val localBreed = localDataSource.getBreed(id)
+        if (refresh) getAndUpdateBreedFromRemote(id, localBreed)
+        return@withContext localBreed
     } ?: throw Exception("Breed not found")
-
 
     suspend fun toggleFavorite(id: String, isFavorite: Boolean) = withContext(Dispatchers.IO) {
         localDataSource.updateFavorite(id, isFavorite)
         return@withContext getBreed(id, false)
     }
 
-    fun getFavorites() = localDataSource.getFavorites()
+
+    fun getFavorites(): Flow<PagingData<Breed>> = Pager(
+        pagingSourceFactory = { localDataSource.getFavorites() },
+        config = PagingConfig(
+            pageSize = PAGE_SIZE,
+            prefetchDistance = 5,
+            enablePlaceholders = true,
+        ),
+    ).flow
+
+    private suspend fun getAndUpdateBreedFromRemote(id: String, localBreed: Breed?) =
+        runCatching { api.getBreed(id) }.onSuccess {
+            localDataSource.updateBreed(
+                it.copy(
+                    isFavorite = localBreed?.isFavorite ?: false,
+                    image = localBreed?.image ?: it.image
+                )
+            )
+        }
 }

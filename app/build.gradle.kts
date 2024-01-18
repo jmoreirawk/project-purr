@@ -12,10 +12,11 @@ android {
     defaultConfig {
         applicationId = App.Android.applicationId
         minSdk = App.Android.minSdk
+        targetSdk = App.Android.targetSdk
         versionCode = App.Android.versionCode
         versionName = App.Android.versionName
 
-        testInstrumentationRunner = App.Android.TestRunner.default
+        testInstrumentationRunner = "pro.moreira.projectpurr.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -70,4 +71,11 @@ dependencies {
         implementation(android)
         ksp(compiler)
     }
+    // Testing
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.test)
+    debugImplementation(libs.compose.manifest)
+    androidTestImplementation(libs.hilt.testing)
+    ksp(libs.hilt.testing.compiler)
+    androidTestImplementation(libs.androidx.test.runner)
 }

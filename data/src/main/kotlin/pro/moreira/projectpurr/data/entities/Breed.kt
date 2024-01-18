@@ -1,11 +1,12 @@
 package pro.moreira.projectpurr.data.entities
 
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 
-@Entity(primaryKeys = ["id"])
+@Entity
 data class Breed(
-    val id: String,
+    @PrimaryKey val id: String,
     val name: String,
     val origin: String,
     val temperament: String,

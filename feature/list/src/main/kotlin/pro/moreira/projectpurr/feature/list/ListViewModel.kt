@@ -3,14 +3,12 @@ package pro.moreira.projectpurr.feature.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
-import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pro.moreira.projectpurr.data.entities.Breed
 import pro.moreira.projectpurr.data.remote.CatRepository
 import javax.inject.Inject
 
@@ -54,19 +52,8 @@ class ListViewModel
         }
     }
 
-    private fun getBreeds(query: String) = repository.getCatList(query).map { pagingData ->
-        pagingData.map { it.mapIntoListScreenModel() }
-    }.cachedIn(viewModelScope)
+    private fun getBreeds(query: String) =
+        repository.getCatList(query).map { it }.cachedIn(viewModelScope)
 
-    private fun getFavorites() = repository.getFavorites().map { pagingData ->
-        pagingData.map { it.mapIntoListScreenModel() }
-    }.cachedIn(viewModelScope)
-
-    private fun Breed.mapIntoListScreenModel() = ListScreenModel(
-        id = id,
-        breedName = name,
-        url = image?.url ?: "",
-        isFavorite = isFavorite,
-        lifeSpan = getMaxAverageLifeSpan(),
-    )
+    private fun getFavorites() = repository.getFavorites().map { it }.cachedIn(viewModelScope)
 }

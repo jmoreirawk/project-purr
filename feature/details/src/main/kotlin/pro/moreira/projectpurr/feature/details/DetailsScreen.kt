@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -118,7 +119,10 @@ private fun DetailsContent(
                 title = stringResource(id = string.origin),
                 value = details.origin,
             )
-            IconButton(onClick = { onFavoriteClicked(!details.isFavorite) }) {
+            IconButton(
+                modifier = Modifier.testTag("favorite"),
+                onClick = { onFavoriteClicked(!details.isFavorite) },
+            ) {
                 FavoriteIcon(
                     modifier = Modifier.size(dimens.largeIconSize),
                     isFavorite = details.isFavorite,

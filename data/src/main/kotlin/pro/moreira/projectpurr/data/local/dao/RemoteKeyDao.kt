@@ -9,14 +9,11 @@ import pro.moreira.projectpurr.data.entities.RemoteKey
 @Dao
 interface RemoteKeyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrReplace(remoteKey: RemoteKey)
+    suspend fun insertKey(remoteKey: RemoteKey)
 
     @Query("SELECT * FROM remote_keys WHERE label = :query")
-    suspend fun remoteKeyByQuery(query: String): RemoteKey
+    suspend fun getKey(query: String): RemoteKey?
 
-    @Query("DELETE FROM remote_keys WHERE label = :query")
-    suspend fun deleteByQuery(query: String)
-
-    @Query("SELECT lastUpdate FROM remote_keys WHERE label = :query")
-    suspend fun getLastUpdate(query: String): Long?
+    @Query("DELETE FROM remote_keys")
+    suspend fun deleteKeys()
 }

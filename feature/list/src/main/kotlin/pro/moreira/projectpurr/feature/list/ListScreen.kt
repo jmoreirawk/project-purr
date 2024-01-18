@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,6 +60,7 @@ import pro.moreira.projectpurr.common.ui.assets.components.Image
 import pro.moreira.projectpurr.common.ui.assets.components.Loading
 import pro.moreira.projectpurr.common.ui.assets.components.TopBar
 import pro.moreira.projectpurr.common.ui.assets.dimens
+import pro.moreira.projectpurr.data.entities.Breed
 import pro.moreira.projectpurr.feature.list.navigation.BottomNavBar
 import pro.moreira.projectpurr.feature.list.navigation.BottomNavItems
 
@@ -114,7 +116,7 @@ private fun ListScreenState.Success.getListToShow(showFavorites: Boolean) =
 @Composable
 private fun ListContent(
     paddingValues: PaddingValues,
-    items: LazyPagingItems<ListScreenModel>,
+    items: LazyPagingItems<Breed>,
     goToDetails: (String) -> Unit,
     isFavoritesTab: Boolean,
     onSearch: (String) -> Unit,
@@ -188,7 +190,7 @@ private fun ColumnScope.Search(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun BreedItem(
     goToDetails: (String) -> Unit,
-    item: ListScreenModel,
+    item: Breed,
     isFavoritesTab: Boolean,
     onFavoriteClicked: (String, Boolean) -> Unit,
 ) {
@@ -207,13 +209,13 @@ private fun BreedItem(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             BreedImage(
-                url = item.url,
+                url = item.image?.url ?: "",
                 isFavorite = item.isFavorite,
                 showLifeSpan = isFavoritesTab && item.isFavorite,
-                lifeSpan = item.lifeSpan,
+                lifeSpan = item.getMaxAverageLifeSpan(),
             ) { onFavoriteClicked(item.id, !item.isFavorite) }
             Spacer(modifier = Modifier.height(dimens.normalPadding))
-            BreedName(item.breedName)
+            BreedName(item.name)
         }
     }
 }
@@ -239,7 +241,12 @@ private fun BreedImage(
                 contentScale = ContentScale.Crop,
             )
         }
-        IconButton(modifier = Modifier.align(Alignment.TopEnd), onClick = onFavoriteClicked) {
+        IconButton(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .testTag("favorite"),
+            onClick = onFavoriteClicked,
+        ) {
             FavoriteIcon(
                 modifier = Modifier
                     .size(dimens.iconSize)
@@ -307,12 +314,17 @@ private fun ErrorMessage(state: LoadState.Error) {
 fun Preview() {
     BreedItem(
         goToDetails = {},
-        item = ListScreenModel(
+        item = Breed(
             "1",
             "Abyssinian",
-            "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
-            true,
-            "20 years"
+            "",
+            "",
+            "",
+            pro.moreira.projectpurr.data.entities.Image(
+                "",
+                "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
+            ),
+            "12 - 16",
         ),
         isFavoritesTab = true,
     ) { _, _ -> }

@@ -8,7 +8,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import pro.moreira.projectpurr.data.entities.Breed
+import pro.moreira.projectpurr.data.entities.Favorite
+import pro.moreira.projectpurr.data.local.AppDatabase
 import pro.moreira.projectpurr.data.local.CatLocalDataSource
+import pro.moreira.projectpurr.data.local.dao.FavoriteDao
 import pro.moreira.projectpurr.data.local.dao.RemoteKeyDao
 import pro.moreira.projectpurr.data.paging.CatsRemoteMediator
 import javax.inject.Inject
@@ -16,8 +19,10 @@ import javax.inject.Inject
 class CatRepository
 @Inject constructor(
     private val api: CatApi,
+    private val database: AppDatabase,
     private val localDataSource: CatLocalDataSource,
     private val remoteKeyDao: RemoteKeyDao,
+    private val favoriteDao: FavoriteDao,
 ) {
     companion object {
         const val PAGE_SIZE = 20
@@ -31,7 +36,14 @@ class CatRepository
             prefetchDistance = 5,
             enablePlaceholders = true,
         ),
-        remoteMediator = CatsRemoteMediator(query, localDataSource, remoteKeyDao, api),
+        remoteMediator = CatsRemoteMediator(
+            query,
+            database,
+            localDataSource,
+            remoteKeyDao,
+            favoriteDao,
+            api,
+        ),
     ).flow
 
     suspend fun getBreed(id: String, refresh: Boolean): Breed = withContext(Dispatchers.IO) {
@@ -42,6 +54,10 @@ class CatRepository
 
     suspend fun toggleFavorite(id: String, isFavorite: Boolean) = withContext(Dispatchers.IO) {
         localDataSource.updateFavorite(id, isFavorite)
+        runCatching {
+            if (isFavorite) favoriteDao.insertFavorite(Favorite(id))
+            else favoriteDao.deleteFavoriteById(id)
+        }
         return@withContext getBreed(id, false)
     }
 

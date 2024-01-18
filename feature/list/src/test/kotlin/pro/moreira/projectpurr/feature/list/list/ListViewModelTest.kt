@@ -1,4 +1,4 @@
-package pro.moreira.projectpurr.feature.list
+package pro.moreira.projectpurr.feature.list.list
 
 import app.cash.turbine.test
 import io.mockk.coEvery
@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import pro.moreira.projectpurr.common.BaseTest
 import pro.moreira.projectpurr.data.remote.CatRepository
+import pro.moreira.projectpurr.feature.list.common.ListScreenState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ListViewModelTest : BaseTest() {
@@ -61,7 +62,7 @@ class ListViewModelTest : BaseTest() {
         }
 
     @Test
-    fun `Given an error, when onFavoriteClicked is called, then error is retrieved`() = runTest {
+    fun `Given an error, when onFavoriteClicked is called, then error is received`() = runTest {
         val id = faker.lorem().sentence()
         val isFavorite = faker.bool().bool()
         val errorMessage = faker.lorem().sentence()

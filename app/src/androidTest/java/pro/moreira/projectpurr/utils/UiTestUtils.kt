@@ -1,4 +1,4 @@
-package pro.moreira.projectpurr
+package pro.moreira.projectpurr.utils
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -18,18 +18,6 @@ fun ComposeTestRule.waitForText(
     timeoutMillis: Long = 5000,
 ) {
     waitUntilAtLeastOneExists(hasText(text), timeoutMillis = timeoutMillis)
-}
-
-@OptIn(ExperimentalTestApi::class)
-fun ComposeTestRule.sleep(
-    timeoutMillis: Long,
-) {
-    @Suppress("SwallowedException")
-    try {
-        waitUntilAtLeastOneExists(hasText("NeverFound!"), timeoutMillis = timeoutMillis)
-    } catch (t: Throwable) {
-        // swallow this exception
-    }
 }
 
 fun ComposeTestRule.isTextDisplayed(

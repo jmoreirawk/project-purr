@@ -22,6 +22,8 @@ dependencies {
         implementation(ui)
         implementation(activity)
         implementation(material3)
+        implementation(material)
+        implementation(navigation)
     }
     // Images
     implementation(libs.landscapist)

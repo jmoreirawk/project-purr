@@ -16,7 +16,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -34,9 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,8 +43,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import pro.moreira.projectpurr.common.ui.assets.R.drawable
 import pro.moreira.projectpurr.common.ui.assets.R.string
+import pro.moreira.projectpurr.common.ui.assets.components.FavoriteIcon
 import pro.moreira.projectpurr.common.ui.assets.components.Image
 import pro.moreira.projectpurr.common.ui.assets.components.Loading
 import pro.moreira.projectpurr.common.ui.assets.dimens
@@ -82,6 +80,7 @@ fun ListScreen(
                     (value as ListScreenState.Success).list.collectAsLazyPagingItems(),
                     goToDetails,
                     viewModel::onSearch,
+                    viewModel::onFavoriteClicked,
                 )
 
                 is ListScreenState.Error -> LaunchedEffect(value) {
@@ -98,6 +97,7 @@ private fun Content(
     items: LazyPagingItems<ListScreenModel>,
     goToDetails: (String) -> Unit,
     onSearch: (String) -> Unit,
+    onFavoriteClicked: (String, Boolean) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -129,7 +129,7 @@ private fun Content(
             }
             items(items.itemCount) { index ->
                 val item = items[index] ?: return@items
-                BreedItem(goToDetails, item)
+                BreedItem(goToDetails, item, onFavoriteClicked)
             }
             item {
                 when {
@@ -149,6 +149,7 @@ private fun Content(
 private fun BreedItem(
     goToDetails: (String) -> Unit,
     item: ListScreenModel,
+    onFavoriteClicked: (String, Boolean) -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -164,7 +165,7 @@ private fun BreedItem(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            BreedImage(item.url, item.isFavorite)
+            BreedImage(item.url, item.isFavorite) { onFavoriteClicked(item.id, !item.isFavorite) }
             Spacer(modifier = Modifier.height(dimens.normalPadding))
             BreedName(item.breedName)
         }
@@ -172,7 +173,11 @@ private fun BreedItem(
 }
 
 @Composable
-private fun BreedImage(url: String, isFavorite: Boolean) {
+private fun BreedImage(
+    url: String,
+    isFavorite: Boolean,
+    onFavoriteClicked: () -> Unit,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -184,18 +189,14 @@ private fun BreedImage(url: String, isFavorite: Boolean) {
             url = url,
             contentScale = ContentScale.Crop,
         )
-        val painter = painterResource(
-            id = if (isFavorite) drawable.ic_fav else drawable.ic_not_fav
-        )
-        Icon(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(dimens.iconSize)
-                .padding(dimens.smallPadding),
-            painter = painter,
-            contentDescription = stringResource(id = string.favorite),
-            tint = Color.Red,
-        )
+        IconButton(modifier = Modifier.align(Alignment.TopEnd), onClick = onFavoriteClicked) {
+            FavoriteIcon(
+                modifier = Modifier
+                    .size(dimens.iconSize)
+                    .padding(dimens.smallPadding),
+                isFavorite = isFavorite,
+            )
+        }
     }
 }
 
@@ -246,5 +247,5 @@ fun Preview() {
             "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
             false,
         ),
-    )
+    ) { _, _ -> }
 }

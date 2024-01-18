@@ -4,10 +4,13 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import pro.moreira.projectpurr.data.entities.Breed
 import pro.moreira.projectpurr.data.entities.RemoteKey
 import pro.moreira.projectpurr.data.local.CatLocalDataSource
 import pro.moreira.projectpurr.data.local.dao.RemoteKeyDao
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalPagingApi::class)
 class CatsRemoteMediator(
@@ -16,6 +19,17 @@ class CatsRemoteMediator(
     private val remoteKeyDao: RemoteKeyDao,
     private val api: CatApi,
 ) : RemoteMediator<Int, Breed>() {
+
+    override suspend fun initialize(): InitializeAction {
+        val cacheTimeout = TimeUnit.DAYS.convert(30, TimeUnit.MILLISECONDS)
+        val lastUpdate = remoteKeyDao.getLastUpdate(name ?: "")
+        return if (lastUpdate != null && System.currentTimeMillis() - lastUpdate >= cacheTimeout) {
+            InitializeAction.SKIP_INITIAL_REFRESH
+        } else {
+            InitializeAction.LAUNCH_INITIAL_REFRESH
+        }
+    }
+
 
     override suspend fun load(
         loadType: LoadType,
@@ -46,8 +60,15 @@ class CatsRemoteMediator(
 
     private suspend fun getRemoteResponse(limit: Int, loadKey: Int?) = if (name.isNullOrEmpty()) {
         api.getCatList(limit, loadKey ?: 0)
+            .map { if (it.image == null) it.getImageIfPossible() else it }
     } else {
         api.searchBreed(name, limit, loadKey ?: 0)
+    }
+
+    private suspend fun Breed.getImageIfPossible(): Breed = withContext(Dispatchers.IO) {
+        runCatching { api.getImagesByBreedId(id).random() }.getOrNull()?.let { image ->
+            copy(image = image).also { localDataSource.updateBreed(it) }
+        } ?: this@getImageIfPossible
     }
 
     private suspend fun deleteEntriesIfNecessary(loadType: LoadType) {
@@ -58,7 +79,13 @@ class CatsRemoteMediator(
     }
 
     private suspend fun updateRemoteKeys(loadKey: Int?) {
-        remoteKeyDao.insertOrReplace(RemoteKey(label = name ?: "", nextKey = (loadKey ?: 0) + 1))
+        remoteKeyDao.insertOrReplace(
+            RemoteKey(
+                label = name ?: "",
+                nextKey = (loadKey ?: 0) + 1,
+                lastUpdate = System.currentTimeMillis()
+            )
+        )
     }
 
     private suspend fun updateLocalBreeds(response: List<Breed>) {

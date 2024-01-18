@@ -19,5 +19,7 @@ class CatLocalDataSource
     suspend fun updateFavorite(id: String, isFavorite: Boolean) =
         breedDao.updateFavorite(id, isFavorite)
 
+    fun getFavorites() = breedDao.getFavorites()
+
     suspend fun deleteAll() = breedDao.deleteAll()
 }

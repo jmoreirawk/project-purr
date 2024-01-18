@@ -1,7 +1,6 @@
 plugins {
     id("com.android.library")
     kotlin("android")
-    id("com.google.dagger.hilt.android")
     alias(libs.plugins.ksp)
 }
 

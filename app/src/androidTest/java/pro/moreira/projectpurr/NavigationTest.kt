@@ -29,8 +29,6 @@ class NavigationTest {
         waitForText("Cyprus")
         press("Cyprus")
         pressWithTag("favorite")
-        sleep(2000)
         pressWithTag("back")
-        sleep(2000)
     }
 }

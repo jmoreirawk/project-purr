@@ -16,6 +16,10 @@ android {
         buildConfigField("String", "CATS_API_URL", "\"https://api.thecatapi.com/v1/\"")
         buildConfigField("String", "CATS_API_KEY", "\"$apiKey\"")
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -45,4 +49,10 @@ dependencies {
         implementation(kotlin)
         ksp(kotlin.codegen)
     }
+    // Testing
+    testImplementation(project(":common:test"))
+    testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.faker)
 }

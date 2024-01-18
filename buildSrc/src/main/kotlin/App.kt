@@ -11,8 +11,4 @@ object App {
             const val default = "androidx.test.runner.AndroidJUnitRunner"
         }
     }
-
-    object Java {
-        const val version = "1.8"
-    }
 }

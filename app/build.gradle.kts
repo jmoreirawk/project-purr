@@ -1,8 +1,8 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -31,17 +31,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = App.Java.version
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
     }
     packaging {
         resources {
@@ -51,6 +51,10 @@ android {
 }
 
 dependencies {
+    // Modules
+    implementation(project(":feature:list"))
+    implementation(project(":feature:details"))
+    // Android
     implementation(libs.androidx.ktx.core)
     // Compose
     with(libs.compose) {
@@ -64,10 +68,6 @@ dependencies {
     // Dependency Injection
     with(libs.hilt) {
         implementation(android)
-        kapt(compiler)
+        ksp(compiler)
     }
-}
-
-kapt {
-    correctErrorTypes = true
 }

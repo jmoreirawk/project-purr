@@ -2,7 +2,7 @@
 
 ## Description
 
-Project Purr is an Android application developed using Kotlin, and built with Gradle.
+Project Purr is an Android application developed using Kotlin that uses the [Cat API](https://thecatapi.com/) to show information about various cat breeds.
 
 ## Setup
 

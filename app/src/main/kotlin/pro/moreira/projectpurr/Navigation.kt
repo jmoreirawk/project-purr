@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import pro.moreira.projectpurr.feature.details.DetailsScreen
 import pro.moreira.projectpurr.feature.list.ListScreen
 
 @Composable
@@ -22,7 +23,9 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
             "details/{id}",
             listOf(navArgument("id") { type = NavType.StringType })
         ) {
-            // TODO
+            DetailsScreen(
+                goBack = { navController.popBackStack() },
+            )
         }
     }
 }

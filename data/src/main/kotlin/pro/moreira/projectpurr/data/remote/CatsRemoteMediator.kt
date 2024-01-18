@@ -44,7 +44,7 @@ class CatsRemoteMediator(
         }
     }
 
-    private suspend fun getRemoteResponse(limit: Int, loadKey: Int?) = if (name == null) {
+    private suspend fun getRemoteResponse(limit: Int, loadKey: Int?) = if (name.isNullOrEmpty()) {
         api.getCatList(limit, loadKey ?: 0)
     } else {
         api.searchBreed(name, limit, loadKey ?: 0)

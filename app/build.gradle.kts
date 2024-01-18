@@ -16,7 +16,7 @@ android {
         versionCode = App.Android.versionCode
         versionName = App.Android.versionName
 
-        testInstrumentationRunner = "pro.moreira.projectpurr.HiltTestRunner"
+        testInstrumentationRunner = "pro.moreira.projectpurr.utils.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }

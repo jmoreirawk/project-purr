@@ -1,4 +1,4 @@
-package pro.moreira.projectpurr.feature.list.navigation
+package pro.moreira.projectpurr.common.ui.assets.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
@@ -7,19 +7,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import pro.moreira.projectpurr.common.ui.assets.Typography
 import pro.moreira.projectpurr.common.ui.assets.dimens
 
 @Composable
 fun BottomNavBar(
+    navController: NavController,
     items: List<BottomNavItems>,
-    showFavorites: Boolean,
 ) {
-    val currentRoute =
-        if (showFavorites) BottomNavItemsType.FAVORITES else BottomNavItemsType.BREEDS
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
     BottomNavigation(
         backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -41,7 +44,15 @@ fun BottomNavBar(
                 },
                 alwaysShowLabel = false,
                 selected = currentRoute == item.route,
-                onClick = item.onClick,
+                onClick = {
+                    navController.navigate(item.route) {
+                        navController.graph.startDestinationRoute?.let { route ->
+                            popUpTo(route) { saveState = true }
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
             )
         }
     }

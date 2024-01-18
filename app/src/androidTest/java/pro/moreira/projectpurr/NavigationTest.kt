@@ -6,6 +6,11 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import pro.moreira.projectpurr.utils.isTextDisplayed
+import pro.moreira.projectpurr.utils.press
+import pro.moreira.projectpurr.utils.pressWithTag
+import pro.moreira.projectpurr.utils.replaceText
+import pro.moreira.projectpurr.utils.waitForText
 
 @HiltAndroidTest
 class NavigationTest {

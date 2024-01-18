@@ -1,4 +1,4 @@
-package pro.moreira.projectpurr
+package pro.moreira.projectpurr.utils
 
 import android.app.Application
 import android.content.Context
